@@ -17,12 +17,13 @@ public class ConnectToServer : MonoBehaviour
 {
 
 
-
     public struct UdpState
     {
         public UdpClient u;
         public IPEndPoint e;
     }
+
+    [SerializeField] GameObject networkAvatar;
 
     System.Diagnostics.Stopwatch pingTimer = new System.Diagnostics.Stopwatch();
     static UdpClient client;
@@ -34,7 +35,7 @@ public class ConnectToServer : MonoBehaviour
 
     //string ipAdress = "127.0.0.1";
     //string ipAdress = "10.1.42.129";
-    string ipAdress = "10.1.229.232";
+    string ipAdress = "127.0.0.1";
     // Start is called before the first frame update
 
 
