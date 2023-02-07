@@ -18,20 +18,20 @@ public class ConnectToServer : MonoBehaviour
 
     public struct UdpState
     {
-        public UdpClient u;
-        public IPEndPoint e;
+        public UdpClient udpClient;
+        public IPEndPoint ipEndpoint;
     }
 
     [SerializeField] GameObject networkAvatar;
     public List<NetworkGameObject> worldState;
     string receiveString = "";
     System.Diagnostics.Stopwatch pingTimer = new System.Diagnostics.Stopwatch();
-    static UdpClient client;
-    static IPEndPoint ep;
+    //static UdpClient client;
+    //static IPEndPoint ep;
     static UdpState state;
     TimeSpan timer = new TimeSpan();
     public TextMeshProUGUI txt;
-    public List<NetworkGameObject> netObjects;
+    //public List<NetworkGameObject> netObjects;
 
     //string ipAdress = "127.0.0.1";
     //string ipAdress = "10.1.42.129";
@@ -42,14 +42,14 @@ public class ConnectToServer : MonoBehaviour
     {
         while (true)
         {
-            List<NetworkGameObject> netObjects = new List<NetworkGameObject>();
-            netObjects.AddRange(GameObject.FindObjectsOfType<NetworkGameObject>());
+            worldState = new List<NetworkGameObject>();
+            worldState.AddRange(GameObject.FindObjectsOfType<NetworkGameObject>());
 
-            foreach (NetworkGameObject netObject in netObjects)
+            foreach (NetworkGameObject netObject in worldState)
             {
                 if (netObject.isLocallyOwned && netObject.uniqueNetworkID != 0)
                 {
-                    client.Send(netObject.ToPacket(), netObject.ToPacket().Length);
+                    state.udpClient.Send(netObject.ToPacket(), netObject.ToPacket().Length);
                 }
             }
     
@@ -118,45 +118,32 @@ public class ConnectToServer : MonoBehaviour
 
     
 
-
-
     void Start()
     {
         
         Debug.Log("starting up");
 
 
-        client = new UdpClient();
-        IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ipAdress), 9050); // endpoint where server is listening (testing localy)
-        client.Connect(ep);
+        state.udpClient = new UdpClient();
+        state.ipEndpoint = new IPEndPoint(IPAddress.Parse(ipAdress), 9050); // endpoint where server is listening (testing localy)
+        state.udpClient.Connect(state.ipEndpoint);
        
         RequestUIDs();
 
         
         string myMessage = "FirstEntrance";
         byte[] array = Encoding.ASCII.GetBytes(myMessage);
-        client.Send(array, array.Length);
-         StartCoroutine(UpdatePing());
-
-
-
-        client.BeginReceive(ReceiveAsyncCallback, state);
+        state.udpClient.Send(array, array.Length);
+        
+        state.udpClient.BeginReceive(ReceiveAsyncCallback, state);
 
         void ReceiveAsyncCallback(IAsyncResult result)
         {
-            Debug.Log("TRYING TO RECEIVE DATA");
-            byte[] receiveBytes = client.EndReceive(result, ref ep); //get the packet
+            byte[] receiveBytes = state.udpClient.EndReceive(result, ref state.ipEndpoint); //get the packet
             receiveString = Encoding.ASCII.GetString(receiveBytes); //decode the packet
-            Debug.Log("Received " + receiveString + " from " + ep.ToString()); //display the packet
-            pingTimer.Stop();
-            timer = pingTimer.Elapsed;
-            string myMessage2 = "Im A Unity Client";
-            byte[] array2 = Encoding.ASCII.GetBytes(myMessage2);
-            client.Send(array2, array2.Length);
-            pingTimer.Restart();
-            pingTimer.Start();
+            Debug.Log("Received " + receiveString + " from " + state.ipEndpoint.ToString()); //display the packet                    
             assignUids(receiveBytes, receiveString);
-            client.BeginReceive(ReceiveAsyncCallback, state); //self-callback, meaning this loops infinitely
+            state.udpClient.BeginReceive(ReceiveAsyncCallback, state); //self-callback, meaning this loops infinitely
 
         }
         StartCoroutine(SendNetworkUpdates());
@@ -187,7 +174,7 @@ public class ConnectToServer : MonoBehaviour
 
             Debug.Log("Got assignment: " + localID + " local to: " + globalID + " global");
 
-            foreach (NetworkGameObject netObject in netObjects)
+            foreach (NetworkGameObject netObject in worldState)
             {
                 //if the local ID sent by the server matches this game object
                 if (netObject.localID == localID)
@@ -204,16 +191,16 @@ public class ConnectToServer : MonoBehaviour
     void RequestUIDs()
     {
 
-        netObjects = new List<NetworkGameObject>();
-        netObjects.AddRange(GameObject.FindObjectsOfType<NetworkGameObject>());
-        foreach (NetworkGameObject netObject in netObjects)
+        worldState = new List<NetworkGameObject>();
+        worldState.AddRange(GameObject.FindObjectsOfType<NetworkGameObject>());
+        foreach (NetworkGameObject netObject in worldState)
         {
             if (netObject.isLocallyOwned && netObject.uniqueNetworkID == 0)
             {
                 string myMessage = "I need a UID for local object:" + netObject.localID;
                // Debug.Log("SENT");
                 byte[] array = Encoding.ASCII.GetBytes(myMessage);
-                client.Send(array, array.Length);
+                state.udpClient.Send(array, array.Length);
             }
         }
     }
@@ -225,17 +212,6 @@ public class ConnectToServer : MonoBehaviour
     {
        
     }
-
-
-    IEnumerator UpdatePing(){
-        while(true){
-            yield return new WaitForSeconds(1f);
-            //my code here after 3 seconds
-            //Debug.Log("workin");
-            txt.text = "Ping: " + timer.Milliseconds;
-        }
-      
- }
 
     public static String betweenStrings(String text, String start, String end)
     {

@@ -37,11 +37,11 @@ public class NetworkGameObject : MonoBehaviour
                             ;
         return Encoding.ASCII.GetBytes(returnVal);
     }
-
-
       public void FromPacket(string packet) //convert a packet to the relevant data and apply it to the gameobject properties
     {
         string[] values = packet.Split(';');
+        
+        
         transform.position = new Vector3(float.Parse(values[2]), float.Parse(values[3]), float.Parse(values[4]));
         transform.rotation = new Quaternion(float.Parse(values[5]), float.Parse(values[6]), float.Parse(values[7]), float.Parse(values[8]));
     }
