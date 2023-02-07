@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class NetworkGameObject : MonoBehaviour
@@ -12,10 +11,10 @@ public class NetworkGameObject : MonoBehaviour
     [SerializeField] public bool isLocallyOwned;
     [SerializeField] public int uniqueNetworkID;
     [SerializeField] public int localID;
-    static int lastAssignedLocalID = 0;
+    static int lastAssignedLocalID = -1;
     private void Awake()
     {
-        localID = lastAssignedLocalID++;
+       if(isLocallyOwned) localID = lastAssignedLocalID++;
     }
 
     private void Start()

@@ -7,7 +7,6 @@ using System.Text;
 using System;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using Unity.UI;
 using UnityEngine.UI;
 using TMPro;
 using System.Net.Http.Headers;
@@ -36,7 +35,7 @@ public class ConnectToServer : MonoBehaviour
 
     //string ipAdress = "127.0.0.1";
     //string ipAdress = "10.1.42.129";
-    string ipAdress = "127.0.0.1";
+    string ipAdress = "10.1.241.204";
     // Start is called before the first frame update
 
     IEnumerator SendNetworkUpdates()
@@ -48,7 +47,7 @@ public class ConnectToServer : MonoBehaviour
 
             foreach (NetworkGameObject netObject in netObjects)
             {
-                if (netObject.isLocallyOwned)
+                if (netObject.isLocallyOwned && netObject.uniqueNetworkID != 0)
                 {
                     client.Send(netObject.ToPacket(), netObject.ToPacket().Length);
                 }
@@ -89,7 +88,7 @@ public class ConnectToServer : MonoBehaviour
                             //only update it if we don't own it - you might want to try disabling and seeing the effect
                             if (!ngo.isLocallyOwned)
                             {
-                                ngo.FromPacket(receiveString);
+                                ngo.FromPacket(receiveString); 
 
                             }
                             //if we have any uniqueID matches, our object is in the world
@@ -105,6 +104,7 @@ public class ConnectToServer : MonoBehaviour
                         //update its component properties from the packet
                         otherPlayerAvatar.GetComponent<NetworkGameObject>().uniqueNetworkID = GetGlobalIDFromPacket(receiveString);
                         otherPlayerAvatar.GetComponent<NetworkGameObject>().FromPacket(receiveString);
+                        //Debug.Log("entered updateWorld");
                     }
                 }
 
@@ -131,12 +131,12 @@ public class ConnectToServer : MonoBehaviour
         client.Connect(ep);
        
         RequestUIDs();
-        StartCoroutine(SendNetworkUpdates());
 
+        
         string myMessage = "FirstEntrance";
         byte[] array = Encoding.ASCII.GetBytes(myMessage);
         client.Send(array, array.Length);
-
+         StartCoroutine(UpdatePing());
 
 
 
@@ -144,14 +144,10 @@ public class ConnectToServer : MonoBehaviour
 
         void ReceiveAsyncCallback(IAsyncResult result)
         {
-
+            Debug.Log("TRYING TO RECEIVE DATA");
             byte[] receiveBytes = client.EndReceive(result, ref ep); //get the packet
             receiveString = Encoding.ASCII.GetString(receiveBytes); //decode the packet
-           
-            
-
             Debug.Log("Received " + receiveString + " from " + ep.ToString()); //display the packet
-            client.BeginReceive(ReceiveAsyncCallback, state); //self-callback, meaning this loops infinitely
             pingTimer.Stop();
             timer = pingTimer.Elapsed;
             string myMessage2 = "Im A Unity Client";
@@ -160,9 +156,12 @@ public class ConnectToServer : MonoBehaviour
             pingTimer.Restart();
             pingTimer.Start();
             assignUids(receiveBytes, receiveString);
+            client.BeginReceive(ReceiveAsyncCallback, state); //self-callback, meaning this loops infinitely
 
         }
-        
+        StartCoroutine(SendNetworkUpdates());
+        StartCoroutine(updateWorldState());
+
     }
 
 
@@ -173,9 +172,11 @@ public class ConnectToServer : MonoBehaviour
 
     void assignUids(byte[] receiveBytes, string receiveString)
     {
-
+        Debug.Log(receiveString);
         if (receiveString.Contains("Assigned UID:"))
         {
+
+           
 
             int parseFrom = receiveString.IndexOf(':');
             int parseTo = receiveString.LastIndexOf(';');
@@ -194,6 +195,7 @@ public class ConnectToServer : MonoBehaviour
                     Debug.Log(localID + " : " + globalID);
                     //the global ID becomes the server-provided value
                     netObject.uniqueNetworkID = globalID;
+                    //Debug.Log("entered assignUids");
                 }
             }
         }
@@ -209,6 +211,7 @@ public class ConnectToServer : MonoBehaviour
             if (netObject.isLocallyOwned && netObject.uniqueNetworkID == 0)
             {
                 string myMessage = "I need a UID for local object:" + netObject.localID;
+               // Debug.Log("SENT");
                 byte[] array = Encoding.ASCII.GetBytes(myMessage);
                 client.Send(array, array.Length);
             }
@@ -220,9 +223,19 @@ public class ConnectToServer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //txt.text = "Ping: " + timer.Milliseconds;
+       
     }
 
+
+    IEnumerator UpdatePing(){
+        while(true){
+            yield return new WaitForSeconds(1f);
+            //my code here after 3 seconds
+            //Debug.Log("workin");
+            txt.text = "Ping: " + timer.Milliseconds;
+        }
+      
+ }
 
     public static String betweenStrings(String text, String start, String end)
     {
