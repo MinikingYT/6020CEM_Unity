@@ -35,7 +35,7 @@ public class ConnectToServer : MonoBehaviour
 
     //string ipAdress = "127.0.0.1";
     //string ipAdress = "10.1.42.129";
-    string ipAdress = "10.1.241.204";
+    string ipAdress = "127.0.0.1";
     // Start is called before the first frame update
 
     IEnumerator SendNetworkUpdates()
