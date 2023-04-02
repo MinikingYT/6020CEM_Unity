@@ -39,10 +39,9 @@ public class NetworkGameObject : MonoBehaviour
     }
       public void FromPacket(string packet) //convert a packet to the relevant data and apply it to the gameobject properties
     {
-        string[] values = packet.Split(';');
-        
-        
-        transform.position = new Vector3(float.Parse(values[2]) / -100, float.Parse(values[4]) / 100, float.Parse(values[3])) / 100;
+       string[] values = packet.Split(';');
+    
+        transform.position = new Vector3(float.Parse(values[2]) / -100, float.Parse(values[4]) / 100, float.Parse(values[3]) / 100);
         transform.rotation = new Quaternion(float.Parse(values[5]), float.Parse(values[7]), float.Parse(values[6]), float.Parse(values[8]));
     }
 

@@ -148,7 +148,7 @@ public class ConnectToServer : MonoBehaviour
         }
         StartCoroutine(SendNetworkUpdates());
         StartCoroutine(updateWorldState());
-
+        StartCoroutine(SendHeartbeat());
     }
 
 
@@ -205,7 +205,18 @@ public class ConnectToServer : MonoBehaviour
         }
     }
 
+    IEnumerator SendHeartbeat()
+    {
+        while (true)
+        {
+            string heartbeatMessage = "Heartbeat";
+            byte[] array = Encoding.ASCII.GetBytes(heartbeatMessage);
+            state.udpClient.Send(array, array.Length);
 
+            // Send the heartbeat message every 5 seconds
+            yield return new WaitForSeconds(3);
+        }
+    }
 
     // Update is called once per frame
     void Update()
