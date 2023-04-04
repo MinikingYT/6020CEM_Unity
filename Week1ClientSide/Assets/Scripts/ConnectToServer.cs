@@ -141,7 +141,7 @@ public class ConnectToServer : MonoBehaviour
         {
             byte[] receiveBytes = state.udpClient.EndReceive(result, ref state.ipEndpoint); //get the packet
             receiveString = Encoding.ASCII.GetString(receiveBytes); //decode the packet
-            Debug.Log("Received " + receiveString + " from " + state.ipEndpoint.ToString()); //display the packet                    
+            //Debug.Log("Received " + receiveString + " from " + state.ipEndpoint.ToString()); //display the packet                    
             assignUids(receiveBytes, receiveString);
             state.udpClient.BeginReceive(ReceiveAsyncCallback, state); //self-callback, meaning this loops infinitely
 
@@ -159,7 +159,7 @@ public class ConnectToServer : MonoBehaviour
 
     void assignUids(byte[] receiveBytes, string receiveString)
     {
-        Debug.Log(receiveString);
+        //Debug.Log(receiveString);
         if (receiveString.Contains("Assigned UID:"))
         {
 
@@ -188,6 +188,13 @@ public class ConnectToServer : MonoBehaviour
         }
     }
 
+
+    public void SendCustomMessage(string message)
+    {
+        byte[] messageBytes = Encoding.ASCII.GetBytes(message);
+        state.udpClient.Send(messageBytes, messageBytes.Length);
+    }
+
     void RequestUIDs()
     {
 
@@ -205,15 +212,18 @@ public class ConnectToServer : MonoBehaviour
         }
     }
 
+
+
     IEnumerator SendHeartbeat()
     {
+        //while thee program is running (since script is never deleted)
         while (true)
         {
             string heartbeatMessage = "Heartbeat";
             byte[] array = Encoding.ASCII.GetBytes(heartbeatMessage);
             state.udpClient.Send(array, array.Length);
 
-            // Send the heartbeat message every 5 seconds
+            //send the "heartbeat" message every 1 seconds
             yield return new WaitForSeconds(3);
         }
     }

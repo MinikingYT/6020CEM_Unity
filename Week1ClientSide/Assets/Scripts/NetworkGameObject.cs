@@ -11,6 +11,8 @@ public class NetworkGameObject : MonoBehaviour
     [SerializeField] public bool isLocallyOwned;
     [SerializeField] public int uniqueNetworkID;
     [SerializeField] public int localID;
+
+    [SerializeField] public int health;
     static int lastAssignedLocalID = -1;
     private void Awake()
     {
