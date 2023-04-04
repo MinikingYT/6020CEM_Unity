@@ -242,7 +242,7 @@ MonoBehaviour:
   isLocallyOwned: 1
   uniqueNetworkID: 0
   localID: 0
-  health: 0
+  health: 100
 --- !u!114 &782628389
 MonoBehaviour:
   m_ObjectHideFlags: 0

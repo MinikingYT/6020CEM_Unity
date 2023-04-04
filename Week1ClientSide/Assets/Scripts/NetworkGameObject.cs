@@ -12,7 +12,7 @@ public class NetworkGameObject : MonoBehaviour
     [SerializeField] public int uniqueNetworkID;
     [SerializeField] public int localID;
 
-    [SerializeField] public int health;
+    [SerializeField] public float health;
     static int lastAssignedLocalID = -1;
     private void Awake()
     {
@@ -24,6 +24,9 @@ public class NetworkGameObject : MonoBehaviour
       
     }
 
+    public void SetHP(float hp){
+        health = health - hp;
+    }
    public byte[] ToPacket() //convert the relevant info on the gameobject to a packet
     {
         //create a delimited string with the required data
@@ -33,12 +36,16 @@ public class NetworkGameObject : MonoBehaviour
                             transform.position.z * 100 + ";" +
                             transform.position.y * 100 + ";" +
                             transform.rotation.x + ";" +
-                            transform.rotation.z + ";" +
+                            transform.rotation.z + ";" + //unity and unreal have offsets which are also added here
                             transform.rotation.y + ";" +
                             transform.rotation.w + ";"
                             ;
+
+                            //send the information, converted int ascii code
         return Encoding.ASCII.GetBytes(returnVal);
     }
+
+    //recieve other clients info from the server
       public void FromPacket(string packet) //convert a packet to the relevant data and apply it to the gameobject properties
     {
        string[] values = packet.Split(';');

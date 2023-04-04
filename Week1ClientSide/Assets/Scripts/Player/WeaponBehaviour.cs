@@ -5,6 +5,7 @@ using UnityEngine;
 public class WeaponBehaviour : MonoBehaviour
 {
 
+//variables
    public float damage;
     public Camera playerCamera;
     public GameObject player;
@@ -17,21 +18,24 @@ public class WeaponBehaviour : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //on the start gets the script that allows connectio with the server
 
         connection = gameManager.gameObject.GetComponent<ConnectToServer>();
     }
 
-
+//event to shoot a raycast
     public void Shoot(){
          RaycastHit hit;
       
         int layerMask = 1 << 8;
         
-        // This would cast rays only against colliders in layer 8.
-        // But instead we want to collide against everything except layer 8. The ~ operator does this, it inverts a bitmask.
+        //this only cast rays only against colliders that are not in layer 8.
+        
         
         layerMask = ~layerMask;
 
+
+        //raycast goes from camerapos forward
         Vector3 cameraPosition = playerCamera.transform.position;
         Vector3 cameraForward = playerCamera.transform.forward;
 
@@ -40,22 +44,25 @@ public class WeaponBehaviour : MonoBehaviour
         if (Physics.Raycast(cameraPosition, cameraForward, out hit, MaxShotDistance, layerMask))
         {
             Debug.DrawRay(cameraPosition, cameraForward * hit.distance, Color.yellow);
-            Debug.Log("Did Hit");
+         
+         //if hits another client
             if(hit.collider.gameObject.name == "EnemyPlayer(Clone)"){
-                Debug.Log("Hit A Player");
+               
+
+               //Send costume message with that client global id, and the damage he will take
                 NetworkGameObject gameObjRef =  hit.collider.gameObject.GetComponent<NetworkGameObject>();
                 int globalID = gameObjRef.uniqueNetworkID;
 
                 connection.SendCustomMessage("causeDamage: "+damage+ " ; "+ globalID);
 
-                Debug.Log("causeDamage: "+damage+ " ; "+ globalID);
+               
             }
              
         }
         else
         {
             Debug.DrawRay(cameraPosition, cameraForward * MaxShotDistance, Color.white);
-            Debug.Log("Did not Hit");
+           
         }
     }
 
