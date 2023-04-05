@@ -32,7 +32,7 @@ public class ConnectToServer : MonoBehaviour
     TimeSpan timer = new TimeSpan();
     public TextMeshProUGUI txt;
     //public List<NetworkGameObject> netObjects;
-    string ipAdress = "25.13.185.212";
+    string ipAdress = "127.0.0.1";
     // Start is called before the first frame update
 
 //sends the information from all the local objects to the server, so they can be displayed properly to the other clients
@@ -256,7 +256,7 @@ public class ConnectToServer : MonoBehaviour
             byte[] array = Encoding.ASCII.GetBytes(heartbeatMessage);
             state.udpClient.Send(array, array.Length);
 
-            //send the "heartbeat" message every 1 seconds
+            //send the "heartbeat" message every 3 seconds
             yield return new WaitForSeconds(3);
         }
     }
